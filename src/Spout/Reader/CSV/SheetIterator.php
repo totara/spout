@@ -30,7 +30,7 @@ class SheetIterator implements IteratorInterface
      *
      * @return void
      */
-    public function rewind()
+    public function rewind(): void
     {
         $this->hasReadUniqueSheet = false;
     }
@@ -41,7 +41,7 @@ class SheetIterator implements IteratorInterface
      *
      * @return bool
      */
-    public function valid()
+    public function valid(): bool
     {
         return (!$this->hasReadUniqueSheet);
     }
@@ -52,7 +52,7 @@ class SheetIterator implements IteratorInterface
      *
      * @return void
      */
-    public function next()
+    public function next(): void
     {
         $this->hasReadUniqueSheet = true;
     }
@@ -63,6 +63,7 @@ class SheetIterator implements IteratorInterface
      *
      * @return \Box\Spout\Reader\CSV\Sheet
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return $this->sheet;
@@ -74,6 +75,7 @@ class SheetIterator implements IteratorInterface
      *
      * @return int
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return 1;
@@ -84,7 +86,7 @@ class SheetIterator implements IteratorInterface
      *
      * @return void
      */
-    public function end()
+    public function end(): void
     {
         // do nothing
     }

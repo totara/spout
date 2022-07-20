@@ -3,6 +3,9 @@
 namespace Box\Spout\Reader\CSV;
 
 use Box\Spout\Common\Exception\IOException;
+use Box\Spout\Common\Helper\GlobalFunctionsHelper;
+use Box\Spout\Common\Manager\OptionsManagerInterface;
+use Box\Spout\Reader\Common\Creator\InternalEntityFactoryInterface;
 use Box\Spout\Reader\Common\Entity\Options;
 use Box\Spout\Reader\CSV\Creator\InternalEntityFactory;
 use Box\Spout\Reader\ReaderAbstract;
@@ -21,6 +24,24 @@ class Reader extends ReaderAbstract
 
     /** @var string Original value for the "auto_detect_line_endings" INI value */
     protected $originalAutoDetectLineEndings;
+
+    private $canAutoDetectLineEndings;
+
+    /**
+     * @param OptionsManagerInterface $optionsManager
+     * @param GlobalFunctionsHelper $globalFunctionsHelper
+     * @param InternalEntityFactoryInterface $entityFactory
+     */
+    public function __construct(
+        OptionsManagerInterface $optionsManager,
+        GlobalFunctionsHelper $globalFunctionsHelper,
+        InternalEntityFactoryInterface $entityFactory
+    ) {
+        parent::__construct($optionsManager, $globalFunctionsHelper, $entityFactory);
+
+        // Autodetect line endings is deprecated from 8.1 onwards
+        $this->canAutoDetectLineEndings = \version_compare(PHP_VERSION, '8.1.0', '<');
+    }
 
     /**
      * Sets the field delimiter for the CSV.
@@ -84,8 +105,10 @@ class Reader extends ReaderAbstract
      */
     protected function openReader($filePath)
     {
-        $this->originalAutoDetectLineEndings = \ini_get('auto_detect_line_endings');
-        \ini_set('auto_detect_line_endings', '1');
+        if ($this->canAutoDetectLineEndings) {
+            $this->originalAutoDetectLineEndings = \ini_get('auto_detect_line_endings');
+            \ini_set('auto_detect_line_endings', '1');
+        }
 
         $this->filePointer = $this->globalFunctionsHelper->fopen($filePath, 'r');
         if (!$this->filePointer) {
@@ -123,6 +146,8 @@ class Reader extends ReaderAbstract
             $this->globalFunctionsHelper->fclose($this->filePointer);
         }
 
-        \ini_set('auto_detect_line_endings', $this->originalAutoDetectLineEndings);
+        if ($this->canAutoDetectLineEndings) {
+            \ini_set('auto_detect_line_endings', $this->originalAutoDetectLineEndings);
+        }
     }
 }
